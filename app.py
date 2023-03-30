@@ -10,6 +10,11 @@ import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import json
 from bson import json_util
+import numpy as np
+import pandas as pd
+import difflib
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 
@@ -21,8 +26,22 @@ password = urllib.parse.quote_plus('Shivani@123')
 app.config['MONGO_URI'] = 'mongodb+srv://%s:%s@cluster0.wsigl1o.mongodb.net/telstradb?retryWrites=true&w=majority' % (email, password)
 app.config['CORS_Headers'] = 'Content-Type'
 mongo = PyMongo(app)
+db=mongo.db
 users = mongo.db.users
 
+
+#common pre-processing for recommendation
+product_data_cursor= db.products.find()
+product_data_list=list(product_data_cursor)
+
+product_data = pd.DataFrame(product_data_list)
+#print(product_data.head())
+combined_features = product_data['category']+' '+product_data['brand']+' '+product_data['name']+' '+product_data['keyword']+' '+product_data['description']
+
+vectorizer = TfidfVectorizer()
+feature_vectors = vectorizer.fit_transform(combined_features)
+
+similarity = cosine_similarity(feature_vectors)
 
 
 # Signup Api
@@ -185,25 +204,27 @@ def search_by_query():
 
 
 
-# Single Product Api
+# Single Product Api with Recommendation
 
 @app.route('/product/<p_id>', methods = ['GET'])
 def get_product(p_id):
-    currentCollection = mongo.db.products
-    data = currentCollection.find_one({"p_id" : p_id})
-                                              
-    product = {
-            "_id": str(data["_id"]),
+    products=db.products
+    product_info=[]
+    p_id=int(p_id)
+    recommendation_ids=get_recommendation(p_id)
+    for p_id in recommendation_ids:
+        data = products.find_one({"p_id" : str(p_id)})                                         
+        product = {
             "p_id": data["p_id"],
             "category": data["category"],
             "brand": data["brand"],
             "name": data["name"],
             "price": data["price"],
             "image": data["image"],
-            "keyword": data["keyword"],
             "description": data["description"]
         }
-    return jsonify({"product": product})
+        product_info.append(product)
+    return jsonify({"product_info": product_info})
 
 
 
@@ -243,6 +264,31 @@ def collect_review():
 #     currentCollection = mongo.db.products
 #     data = currentCollection.find_one({"name" : name})
 #     return jsonify({'name' : data['name'], 'genre' : data['favGenre'], 'game' : data['favGame']})
+
+#recommendation function for recommendation
+def get_recommendation(product_id):
+    recommendation_ids=[]
+    similarity_score = list(enumerate(similarity[product_id]))
+
+    sorted_similar_products= sorted(similarity_score, key = lambda x:x[1], reverse = True) 
+
+    i = 0
+    count=0
+    prev_category_name=''
+    for product in sorted_similar_products:
+        id= product[0]
+        category_name=product_data.loc[id]['category']
+        if(id==product_id):
+            recommendation_ids.append(id)
+            continue
+        elif(count<4 and prev_category_name!=category_name):
+            recommendation_ids.append(id)
+            count+=1
+            if(count%2==0):
+                prev_category_name=category_name
+    print(recommendation_ids)
+    print(type(recommendation_ids[0]))
+    return recommendation_ids
 
 
 
