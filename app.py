@@ -140,10 +140,10 @@ def add_product():
 
 # Get All Products Api
 
-@app.route('/products', methods=['GET'])
-def get_all_products():
+@app.route('/<category>', methods=['GET'])
+def get_all_products(category):
     current_collection = mongo.db.products
-    all_products = current_collection.find()
+    all_products = current_collection.find({"category":category})
     docs_list  = list(all_products)
     products = []
     for doc in docs_list:
@@ -161,7 +161,7 @@ def get_all_products():
 
         products.append(product)
 
-    return jsonify({"products":products}),200
+    return jsonify(products),200
 
 
 
