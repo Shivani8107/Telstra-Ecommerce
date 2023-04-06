@@ -138,7 +138,7 @@ def add_product():
 
 
 
-# Get All Products Api
+# Get that Category Products Api
 
 @app.route('/<category>', methods=['GET'])
 def get_all_products(category):
@@ -206,7 +206,7 @@ def search_by_query():
 
 # Single Product Api with Recommendation
 
-@app.route('/product/<p_id>', methods = ['GET'])
+@app.route('/products/<string:p_id>', methods = ['GET'])
 def get_product(p_id):
     products=db.products
     product_info=[]
@@ -224,7 +224,8 @@ def get_product(p_id):
             "description": data["description"]
         }
         product_info.append(product)
-    return jsonify({"product_info": product_info})
+
+    return jsonify(product_info)
 
 
 
@@ -286,8 +287,7 @@ def get_recommendation(product_id):
             count+=1
             if(count%2==0):
                 prev_category_name=category_name
-    print(recommendation_ids)
-    print(type(recommendation_ids[0]))
+    
     return recommendation_ids
 
 
