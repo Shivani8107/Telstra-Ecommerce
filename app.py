@@ -163,7 +163,25 @@ def get_all_products(category):
 
     return jsonify(products),200
 
+# Getting Revies for particular product Api
 
+@app.route('/reviews/<p_id>', methods=['GET'])
+def get_reviews(p_id):
+    current_collection = mongo.db.reviews
+    all_reviews = current_collection.find({"p_id":p_id})
+    rev_list = list(all_reviews)
+    reviews =[]
+    for rev in rev_list:
+        review = {
+            "_id": str(rev["_id"]),
+            "p_id": rev["p_id"],
+            "review": rev["review"],
+            "rating": rev["rating"]
+
+        }
+        reviews.append(review)
+
+    return jsonify(reviews),200
 
 # Searching Product with Query Api
 
