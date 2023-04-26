@@ -190,7 +190,6 @@ def get_reviews(p_id):
 @app.route('/search', methods=['GET'])
 def search_by_query():
     query = request.args.get('q')
-    print(query)
     current_collection = mongo.db.products
     # regex = re.compile(f".*{query}.*", re.IGNORECASE)
     all_products = current_collection.find({"$or":[{"p_id":{"$regex":query, "$options": "i"}},
@@ -216,7 +215,6 @@ def search_by_query():
         }
 
         products.append(product)
-    print(products)
     # products = list(current_collection.find({"category": re.compile(f".*{query}.*", re.IGNORECASE)}))
 
 
