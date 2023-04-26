@@ -15,11 +15,13 @@ import pandas as pd
 import difflib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from flask_cors import CORS
 
 
 
 app = Flask(__name__)
 cors = CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 jwt = JWTManager(app)
 email = urllib.parse.quote_plus('shivani')
 password = urllib.parse.quote_plus('Shivani@123')
@@ -273,7 +275,6 @@ def collect_review():
 
     new_review = {'p_id': p_id, 'review': review, 'rating': rating, 'review_analysis': review_analysis}
     current_collection.insert_one(new_review)
-
     return jsonify({"message": "Review added Successfully"}), 200
 
 
