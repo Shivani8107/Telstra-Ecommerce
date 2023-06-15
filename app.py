@@ -224,24 +224,27 @@ def search_by_query():
 
 # Single Product Api with Recommendation
 
-@app.route('/products/<string:p_id>', methods = ['GET'])
+@app.route('/products/<string:p_id>', methods=['GET'])
 def get_product(p_id):
-    products=db.products
-    product_info=[]
-    p_id=int(p_id)
-    recommendation_ids=get_recommendation(p_id)
+    products = db.products
+    product_info = []
+    p_id = int(p_id)
+    recommendation_ids = get_recommendation(p_id)
+    #print("recommendation_ids:", recommendation_ids)
     for p_id in recommendation_ids:
-        data = products.find_one({"p_id" : str(p_id)})                                         
-        product = {
-            "p_id": data["p_id"],
-            "category": data["category"],
-            "brand": data["brand"],
-            "name": data["name"],
-            "price": data["price"],
-            "image": data["image"],
-            "description": data["description"]
-        }
-        product_info.append(product)
+        data = products.find_one({"p_id": str(p_id)})
+        #print("data:", data)
+        if data is not None:
+            product = {
+                "p_id": data["p_id"],
+                "category": data["category"],
+                "brand": data["brand"],
+                "name": data["name"],
+                "price": data["price"],
+                "image": data["image"],
+                "description": data["description"]
+            }
+            product_info.append(product)
 
     return jsonify(product_info)
 
