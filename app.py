@@ -257,6 +257,7 @@ def collect_review():
     current_collection = mongo.db.reviews
     data = request.get_json()
     p_id = data['p_id']
+    name= data['name']
     review = data['review']
     rating = data['rating']
     review_analysis = ''
@@ -274,7 +275,7 @@ def collect_review():
         review_analysis = 'Neutral'
         
 
-    new_review = {'p_id': p_id, 'review': review, 'rating': rating, 'review_analysis': review_analysis}
+    new_review = {'p_id': p_id, 'name': name, 'review': review, 'rating': rating, 'review_analysis': review_analysis}
     current_collection.insert_one(new_review)
     return jsonify({"message": "Review added Successfully"}), 200
 
